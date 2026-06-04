@@ -60,7 +60,6 @@
 
                     <div class="form-section">
                         <h2 class="form-section-title">Способ доставки</h2>
-
                         <div class="delivery-options">
                             <label class="delivery-option">
                                 <input type="radio" name="delivery" value="courier" checked>
@@ -72,36 +71,20 @@
                                 <input type="radio" name="delivery" value="pickup">
                                 <span class="delivery-option-title">Самовывоз</span>
                                 <span class="delivery-option-price">Бесплатно</span>
-                                <span class="delivery-option-desc">Из пункта выдачи с 10:00 до 20:00</span>
-                            </label>
-                            <label class="delivery-option">
-                                <input type="radio" name="delivery" value="post">
-                                <span class="delivery-option-title">Почтой России</span>
-                                <span class="delivery-option-price">от 200 ₽</span>
-                                <span class="delivery-option-desc">Срок доставки 3-7 дней</span>
+                                <span class="delivery-option-desc">Из магазина с 10:00 до 20:00</span>
                             </label>
                         </div>
                     </div>
 
                     <div class="form-section">
                         <h2 class="form-section-title">Способ оплаты</h2>
-
-                        <div class="payment-options">
-                            <label class="payment-option">
-                                <input type="radio" name="payment" value="card" checked>
-                                <span class="payment-option-title">Банковской картой</span>
-                                <span class="payment-option-desc">Visa, MasterCard, МИР</span>
-                            </label>
-                            <label class="payment-option">
-                                <input type="radio" name="payment" value="cash">
-                                <span class="payment-option-title">Наличными</span>
-                                <span class="payment-option-desc">При получении</span>
-                            </label>
-                            <label class="payment-option">
-                                <input type="radio" name="payment" value="online">
-                                <span class="payment-option-title">Онлайн оплата</span>
-                                <span class="payment-option-desc">Безопасный платеж через сервис</span>
-                            </label>
+                        <div class="payment-info">
+                            <p>После оформления заказа с вами свяжется оператор для подтверждения.</p>
+                            <p>Оплата возможна:</p>
+                            <ul>
+                                <li>Онлайн по ссылке (оператор отправит ссылку на оплату)</li>
+                            </ul>
+                            <p class="payment-note">Номер телефона укажите в контактных данных выше.</p>
                         </div>
                     </div>
 
@@ -463,6 +446,24 @@
     .delivery-option-desc {
         margin-left: 33px;
     }
+}
+.payment-info {
+    background: var(--bg-page);
+    padding: 20px;
+    border-radius: var(--radius);
+}
+
+.payment-info p {
+    margin-bottom: 10px;
+}
+
+.payment-info ul {
+    padding-left: 20px;
+    margin-top: 5px;
+}
+
+.payment-info li {
+    margin: 5px 0;
 }
 </style>
 

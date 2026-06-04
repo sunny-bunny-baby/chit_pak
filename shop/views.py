@@ -206,10 +206,17 @@ def checkout(request):
 
     if request.method == 'POST':
         address = f"{request.POST.get('city', '')}, {request.POST.get('address', '')}"
+        if request.POST.get('entrance'):
+            address += f", {request.POST.get('entrance')}"
+        if request.POST.get('postal_code'):
+            address += f", {request.POST.get('postal_code')}"
+
+        delivery_cost = 300 if request.POST.get('delivery') == 'courier' else 0
+        total_with_delivery = cart.get_total_price() + delivery_cost
 
         order = Order.objects.create(
             user=request.user,
-            total_price=cart.get_total_price(),
+            total_price=total_with_delivery,
             delivery_address=address,
             phone=request.POST.get('phone'),
             comment=request.POST.get('comment', ''),
@@ -236,7 +243,7 @@ def checkout(request):
         cart.is_active = False
         cart.save()
 
-        messages.success(request, f'Заказ #{order.id} успешно оформлен')
+        messages.success(request, f'Заказ #{order.id} успешно оформлен! С вами свяжется оператор для подтверждения.')
         return redirect('profile')
 
     return render(request, 'checkout.html', {'cart': cart})
