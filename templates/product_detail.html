@@ -1,0 +1,776 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Чит&Пак{% endblock %}
+
+{% block content %}
+<section class="product-detail-section">
+    <div class="container">
+        <div class="product-detail-wrapper">
+            <!-- Галерея изображений -->
+            <div class="product-detail-gallery">
+                <div class="main-image">
+                    {% with product.get_main_image as main_image_url %}
+                        {% if main_image_url %}
+                            <img id="mainProductImage" src="{{ main_image_url }}" alt="{{ product.name }}" onclick="openFullscreen(this.src)">
+                        {% else %}
+                            <div class="image-placeholder"></div>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                {% if product.images.count > 1 %}
+                <div class="thumbnail-list">
+                    {% for img in product.images.all %}
+                    <div class="thumbnail {% if img.is_main %}active{% endif %}" onclick="changeImage('{{ img.image.url }}', this)">
+                        <img src="{{ img.image.url }}" alt="{{ product.name }}">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Информация о товаре -->
+            <div class="product-detail-info">
+                <h1 class="product-detail-title">{{ product.name }}</h1>
+                <div class="product-detail-type">
+                    Тип: {{ product.product_type.name|default:"Букет" }}
+                </div>
+                {% if product.quantity %}
+                <div class="product-detail-quantity-info">
+                    Количество: {{ product.quantity.value }} ягод
+                </div>
+                {% endif %}
+
+                <div class="product-detail-price" id="basePrice">{{ product.price }} ₽</div>
+
+                <form method="POST" action="/add-to-cart/{{ product.id }}/" id="addToCartForm">
+                    {% csrf_token %}
+
+                    <!-- Выбор шоколада -->
+                    <div class="option-group">
+                        <label>Выберите шоколад</label>
+                        <select name="chocolate_type" id="chocolateSelect" class="option-select" onchange="updatePrice()">
+                            <option value="none">Выбрать шоколад</option>
+                            <option value="white">Белый шоколад</option>
+                            <option value="milk">Молочный шоколад</option>
+                            <option value="dark">Тёмный шоколад</option>
+                            <option value="colored">Белый цветной шоколад (+150 ₽)</option>
+                        </select>
+                        <div id="chocolateColorGroup" style="display: none; margin-top: 10px;">
+                            <label>Выберите цвет шоколада</label>
+                            <select name="chocolate_color" class="option-select" onchange="updatePrice()">
+                                <option value="">Выберите цвет</option>
+                                <option value="red">Красный</option>
+                                <option value="pink">Розовый</option>
+                                <option value="blue">Голубой</option>
+                                <option value="green">Мятный</option>
+                                <option value="yellow">Жёлтый</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Выбор цвета упаковки -->
+                    <div class="option-group">
+                        <label>Выберите цвет упаковки</label>
+                        <select name="packaging_color" id="packagingColorSelect" class="option-select" onchange="updatePrice()">
+                            <option value="">Выбрать цвет упаковки</option>
+                            <option value="beige">Бежевый</option>
+                            <option value="white">Белый</option>
+                            <option value="pink">Розовый</option>
+                            <option value="red">Красный</option>
+                            <option value="gold">Золотой (+100 ₽)</option>
+                            <option value="silver">Серебряный (+100 ₽)</option>
+                        </select>
+                    </div>
+
+                    <!-- Дополнительные ягоды -->
+                    <div class="option-group">
+                        <label>Дополнительные ягоды</label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="extra_berries" value="blueberry" onchange="updatePrice()">
+                            <span>Добавить голубику (+650 ₽)</span>
+                        </label>
+                    </div>
+
+                    <!-- Дополнительные цветы -->
+                    <div class="option-group">
+                        <label>Дополнительные цветы</label>
+                        <select name="flower_type" id="flowerSelect" class="option-select" onchange="updatePrice()">
+                            <option value="">Выберите цветы</option>
+                            <option value="rose">Роза (+700 ₽)</option>
+                            <option value="eustoma">Эустома (+850 ₽)</option>
+                            <option value="gypsophila">Гипсофила (+300 ₽)</option>
+                            <option value="chrysanthemum">Хризантема (+400 ₽)</option>
+                            <option value="peony">Пион (+900 ₽)</option>
+                        </select>
+                        <div id="flowerColorGroup" style="display: none; margin-top: 10px;">
+                            <label>Выберите цвет цветка</label>
+                            <select name="flower_color" class="option-select" onchange="updatePrice()">
+                                <option value="">Выберите цвет</option>
+                                <option value="white">Белый</option>
+                                <option value="red">Красный</option>
+                                <option value="pink">Розовый</option>
+                                <option value="yellow">Жёлтый</option>
+                                <option value="purple">Фиолетовый</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="option-group">
+                        <label>Количество</label>
+                        <div class="quantity-selector">
+                            <button type="button" class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+                            <input type="number" name="quantity" id="quantity" value="1" min="1" max="99" onchange="updatePriceFromQuantity()">
+                            <button type="button" class="quantity-btn" onclick="changeQuantity(1)">+</button>
+                        </div>
+                    </div>
+
+                    <div class="total-price-summary">
+                        <span>Итого:</span>
+                        <span id="finalPrice" class="final-price">{{ product.price }} ₽</span>
+                    </div>
+
+                    <button type="submit" class="btn-add-to-cart">Добавить в корзину</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Описание товара -->
+        <div class="product-description-section">
+            <h3 class="section-subtitle">Описание</h3>
+            <div class="product-description">
+                <p>{{ product.description|linebreaks }}</p>
+            </div>
+        </div>
+
+        <!-- Отзывы -->
+        <div class="product-reviews-section">
+            <h3 class="section-subtitle">Отзывы покупателей</h3>
+
+            {% if user.is_authenticated and not user.is_admin_user %}
+            <button id="openReviewModalBtn" class="btn-primary review-btn">Оставить отзыв</button>
+            {% elif not user.is_authenticated %}
+            <div class="login-to-review">
+                <p><a href="/login/">Войдите</a>, чтобы оставить отзыв</p>
+            </div>
+            {% endif %}
+
+            {% if reviews %}
+            <div class="reviews-list">
+                {% for review in reviews %}
+                <div class="review-card">
+                    <div class="review-header">
+                        <strong class="review-author">{{ review.user.username }}</strong>
+                        <div class="review-rating">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= review.rating %}
+                                    <span class="star filled">★</span>
+                                {% else %}
+                                    <span class="star">★</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <p class="review-date">{{ review.created_at|date:"d.m.Y" }}</p>
+                    <p class="review-comment">{{ review.comment }}</p>
+                    {% if review.image %}
+                    <div class="review-image">
+                        <img src="{{ review.image.url }}" alt="Фото к отзыву">
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="no-reviews">Пока нет отзывов. Будьте первым!</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Модальное окно для полноэкранного просмотра -->
+<div id="fullscreenModal" class="fullscreen-modal">
+    <button class="fullscreen-close" onclick="closeFullscreen()">&times;</button>
+    <img id="fullscreenImage" class="fullscreen-image">
+</div>
+
+<!-- Модальное окно для отзыва -->
+<div id="reviewModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Оставить отзыв</h2>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form method="POST" enctype="multipart/form-data" action="/reviews/">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <div class="form-group">
+                    <label>Оценка</label>
+                    <div class="rating-input">
+                        <input type="radio" name="rating" value="5" id="star5"><label for="star5">★</label>
+                        <input type="radio" name="rating" value="4" id="star4"><label for="star4">★</label>
+                        <input type="radio" name="rating" value="3" id="star3"><label for="star3">★</label>
+                        <input type="radio" name="rating" value="2" id="star2"><label for="star2">★</label>
+                        <input type="radio" name="rating" value="1" id="star1"><label for="star1">★</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Комментарий</label>
+                    <textarea name="comment" rows="4" required placeholder="Поделитесь впечатлениями..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Фотография (необязательно)</label>
+                    <input type="file" name="image" accept="image/*">
+                </div>
+                <button type="submit" class="btn-submit">Отправить отзыв</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.product-detail-section {
+    padding: 60px 0;
+    background: var(--bg-page);
+}
+
+.product-detail-wrapper {
+    display: flex;
+    gap: 60px;
+    align-items: flex-start;
+    margin-bottom: 60px;
+}
+
+.product-detail-gallery {
+    flex: 1;
+}
+
+.main-image {
+    width: 100%;
+    height: auto;
+    min-height: 400px;
+    background: #605151;
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.main-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.thumbnail-list {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.thumbnail {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.thumbnail.active {
+    border-color: var(--accent);
+}
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    background: #605151;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-detail-info {
+    flex: 1;
+}
+
+.product-detail-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.product-detail-type {
+    font-size: 14px;
+    opacity: 0.7;
+    margin-bottom: 8px;
+}
+
+.product-detail-quantity-info {
+    font-size: 14px;
+    color: var(--accent);
+    margin-bottom: 15px;
+}
+
+.product-detail-price {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 30px;
+}
+
+.option-group {
+    margin-bottom: 25px;
+}
+
+.option-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.option-select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 8px 0;
+}
+
+.checkbox-label input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quantity-btn {
+    width: 36px;
+    height: 36px;
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 20px;
+}
+
+#quantity {
+    width: 60px;
+    height: 36px;
+    text-align: center;
+    font-size: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-page);
+}
+
+.total-price-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    margin: 20px 0;
+}
+
+.total-price-summary span {
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.final-price {
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--accent);
+}
+
+.btn-add-to-cart {
+    width: 100%;
+    padding: 16px;
+    background: #605151;
+    color: #d9d0c9;
+    font-weight: 600;
+    font-size: 18px;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-add-to-cart:hover {
+    background: #302b27;
+}
+
+.product-description-section,
+.product-reviews-section {
+    margin-top: 40px;
+    padding-top: 40px;
+    border-top: 1px solid var(--border-color);
+}
+
+.section-subtitle {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.product-description {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.review-btn {
+    margin-bottom: 30px;
+}
+
+.reviews-list {
+    margin-top: 20px;
+}
+
+.review-card {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.review-author {
+    font-size: 16px;
+}
+
+.review-rating .star {
+    color: #ccc;
+    font-size: 16px;
+}
+
+.review-rating .star.filled {
+    color: #e6b35c;
+}
+
+.review-date {
+    font-size: 12px;
+    opacity: 0.6;
+    margin-bottom: 10px;
+}
+
+.review-comment {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.review-image {
+    margin-top: 15px;
+    max-width: 200px;
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.review-image img {
+    width: 100%;
+    height: auto;
+}
+
+.no-reviews {
+    text-align: center;
+    padding: 30px;
+    opacity: 0.7;
+}
+
+.login-to-review {
+    text-align: center;
+    padding: 30px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    margin-bottom: 30px;
+}
+
+.login-to-review a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--bg-page);
+    border-radius: var(--radius);
+    width: 500px;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.form-group textarea,
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-page);
+}
+
+.rating-input {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.rating-input input {
+    display: none;
+}
+
+.rating-input label {
+    font-size: 30px;
+    color: #ccc;
+    cursor: pointer;
+}
+
+.rating-input input:checked ~ label,
+.rating-input label:hover,
+.rating-input label:hover ~ label {
+    color: #e6b35c;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: var(--text-primary);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.fullscreen-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.95);
+    z-index: 2000;
+}
+
+.fullscreen-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fullscreen-image {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
+.fullscreen-close {
+    position: absolute;
+    top: 20px;
+    right: 40px;
+    font-size: 50px;
+    color: white;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .product-detail-wrapper {
+        flex-direction: column;
+    }
+    .product-detail-title {
+        font-size: 28px;
+    }
+    .section-subtitle {
+        font-size: 24px;
+    }
+}
+</style>
+
+<script>
+    function changeQuantity(delta) {
+        let input = document.getElementById('quantity');
+        let newVal = parseInt(input.value) + delta;
+        if (newVal < 1) newVal = 1;
+        if (newVal > 99) newVal = 99;
+        input.value = newVal;
+        updatePriceFromQuantity();
+    }
+
+    function updatePriceFromQuantity() {
+        let quantity = parseInt(document.getElementById('quantity').value);
+        if (isNaN(quantity)) quantity = 1;
+
+        let extraPrice = 0;
+        const chocolateType = document.querySelector('select[name="chocolate_type"]')?.value;
+        if (chocolateType === 'colored') extraPrice += 150;
+        const packagingColor = document.querySelector('select[name="packaging_color"]')?.value;
+        if (packagingColor === 'gold' || packagingColor === 'silver') extraPrice += 100;
+        if (document.querySelector('input[name="extra_berries"]')?.checked) extraPrice += 650;
+        const flowerType = document.querySelector('select[name="flower_type"]')?.value;
+        if (flowerType === 'rose') extraPrice += 700;
+        if (flowerType === 'eustoma') extraPrice += 850;
+        if (flowerType === 'gypsophila') extraPrice += 300;
+        if (flowerType === 'chrysanthemum') extraPrice += 400;
+        if (flowerType === 'peony') extraPrice += 900;
+
+        const total = ({{ product.price }} + extraPrice) * quantity;
+        document.getElementById('finalPriceSpan').innerHTML = total.toFixed(2) + ' ₽';
+        document.getElementById('basePriceDisplay').innerHTML = total.toFixed(2) + ' ₽';
+    }
+
+    function updatePriceFromOptions() {
+        updatePriceFromQuantity();
+    }
+
+    // Навешиваем обработчики на все опции
+    document.querySelectorAll('select, input[type="checkbox"]').forEach(el => {
+        el.addEventListener('change', updatePriceFromOptions);
+    });
+
+    // Галерея
+    window.changeImage = function(url, element) {
+        document.getElementById('mainProductImage').src = url;
+        document.querySelectorAll('.thumbnail').forEach(thumb => thumb.classList.remove('active'));
+        element.classList.add('active');
+    };
+
+    window.openFullscreen = function(url) {
+        document.getElementById('fullscreenImage').src = url;
+        document.getElementById('fullscreenModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeFullscreen = function() {
+        document.getElementById('fullscreenModal').classList.remove('show');
+        document.body.style.overflow = '';
+    };
+
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFullscreen(); });
+
+    // Модальное окно отзыва
+    const modal = document.getElementById('reviewModal');
+    const openBtn = document.getElementById('openReviewModalBtn');
+    const closeBtn = document.querySelector('.modal-close');
+    if (openBtn) openBtn.addEventListener('click', () => modal?.classList.add('show'));
+    if (closeBtn) closeBtn.addEventListener('click', () => modal?.classList.remove('show'));
+    if (modal) window.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
+
+    // Звёзды
+    document.querySelectorAll('.rating-input input').forEach(input => {
+        input.addEventListener('change', function() {
+            const labels = this.parentElement.querySelectorAll('label');
+            const value = parseInt(this.value);
+            labels.forEach((label, index) => {
+                label.style.color = (5 - index <= value) ? '#e6b35c' : '#ccc';
+            });
+        });
+    });
+
+    // Показать/скрыть выбор цвета шоколада
+    document.getElementById('chocolateSelect')?.addEventListener('change', function() {
+        document.getElementById('chocolateColorGroup').style.display = this.value === 'colored' ? 'block' : 'none';
+        updatePriceFromOptions();
+    });
+
+    // Показать/скрыть выбор цвета цветка
+    document.getElementById('flowerSelect')?.addEventListener('change', function() {
+        document.getElementById('flowerColorGroup').style.display = this.value !== '' ? 'block' : 'none';
+        updatePriceFromOptions();
+    });
+
+    // Инициализация
+    updatePriceFromQuantity();
+</script>
+{% endblock %}

@@ -1,0 +1,404 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Чит&Пак - Упаковка для всех{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div id="notificationsModal" class="notifications-modal">
+        <div class="notifications-modal-content">
+            <div class="notifications-modal-header">
+                <h3>Новые заказы</h3>
+                <button id="closeNotificationsModal" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="notifications-modal-body">
+                <div id="notificationsModalList" class="notifications-modal-list">
+                    <div class="notification-loading">Загрузка...</div>
+                </div>
+                <button id="markAllReadModal" class="mark-read-modal-btn">Отметить все прочитанными</button>
+            </div>
+        </div>
+    </div>
+
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-wrapper">
+                    <a href="/" class="logo">
+                        <img src="{% static 'img/logo.svg' %}" alt="Чит&Пак" class="logo-light">
+                        <img src="{% static 'img/logo2.svg' %}" alt="Чит&Пак" class="logo-dark">
+                    </a>
+                </div>
+
+                <nav class="site-nav">
+                    <ul>
+                        <li><a href="/catalog/">Каталог</a></li>
+                        <li><a href="/about/">О нас</a></li>
+                        <li><a href="/reviews/">Отзывы</a></li>
+                        {% if user.is_authenticated and user.is_admin_user %}
+                        <li><a href="/admin-panel/">Админ панель</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+
+                <div class="site-actions">
+                    <button id="searchToggle" class="action-btn search-btn">
+                        <img src="{% static 'img/search-1.svg' %}" alt="Поиск">
+                    </button>
+
+                    {% if user.is_authenticated and user.is_admin_user %}
+                    <div class="notifications-wrapper">
+                        <button id="notificationsBtn" class="action-btn notifications-btn">
+                            <img src="{% static 'img/ntfc-1.svg' %}" alt="Уведомления">
+                            <span id="notificationsCount" class="notifications-count" style="display: none;">0</span>
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    <button id="themeToggle" class="action-btn theme-btn">
+                        <img src="{% static 'img/moon-1.svg' %}" alt="Тема">
+                    </button>
+
+                    {% if user.is_authenticated %}
+                    <a href="/profile/" class="action-btn profile-btn">
+                        <img src="{% static 'img/lk-1.svg' %}" alt="Профиль">
+                    </a>
+                    <a href="/logout/" class="action-btn logout-btn">
+                        <img src="{% static 'img/ex-1.svg' %}" alt="Выйти">
+                    </a>
+                    {% else %}
+                    <a href="/login/" class="action-btn login-btn">
+                        <img src="{% static 'img/en-1.svg' %}" alt="Войти">
+                    </a>
+                    {% endif %}
+
+                    <a href="/cart/" class="action-btn cart-btn">
+                        <img src="{% static 'img/cart-1.svg' %}" alt="Корзина">
+                        <span class="cart-count">{{ cart_count }}</span>
+                    </a>
+
+                    <button id="burgerBtn" class="burger-btn">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="searchBar" class="search-bar">
+                <form action="/catalog/" method="GET" class="search-form">
+                    <input type="text" name="search" placeholder="Поиск товаров..." class="search-input">
+                    <button type="submit" class="search-submit">Найти</button>
+                    <button type="button" id="searchClose" class="search-close">×</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <div id="mobileMenu" class="mobile-menu">
+        <div class="mobile-menu-header">
+            <div class="logo-wrapper">
+                <a href="/" class="logo">
+                    <img src="{% static 'img/logo.svg' %}" alt="Чит&Пак" class="logo-light">
+                    <img src="{% static 'img/logo2.svg' %}" alt="Чит&Пак" class="logo-dark">
+                </a>
+            </div>
+            <button id="closeMobileMenu" class="close-menu-btn">&times;</button>
+        </div>
+        <nav class="mobile-nav">
+            <ul>
+                <li><a href="/catalog/">Каталог</a></li>
+                <li><a href="/about/">О нас</a></li>
+                <li><a href="/reviews/">Отзывы</a></li>
+                {% if user.is_authenticated and user.is_admin_user %}
+                <li><a href="/admin-panel/">Админ панель</a></li>
+                {% endif %}
+                <li><a href="/profile/">Профиль</a></li>
+                <li><a href="/cart/">Корзина</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="/logout/">Выйти</a></li>
+                {% else %}
+                <li><a href="/login/">Войти</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme');
+
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+        }
+
+        const searchToggle = document.getElementById('searchToggle');
+        const searchBar = document.getElementById('searchBar');
+        const searchClose = document.getElementById('searchClose');
+
+        if (searchToggle) {
+            searchToggle.addEventListener('click', () => {
+                searchBar.classList.toggle('active');
+                if (searchBar.classList.contains('active')) {
+                    searchBar.querySelector('.search-input').focus();
+                }
+            });
+        }
+
+        if (searchClose) {
+            searchClose.addEventListener('click', () => {
+                searchBar.classList.remove('active');
+            });
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && searchBar && searchBar.classList.contains('active')) {
+                searchBar.classList.remove('active');
+            }
+        });
+
+        const burgerBtn = document.getElementById('burgerBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const closeMobileMenu = document.getElementById('closeMobileMenu');
+
+        function openMenu() {
+            mobileMenu.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenu() {
+            mobileMenu.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        if (burgerBtn) {
+            burgerBtn.addEventListener('click', openMenu);
+        }
+
+        if (closeMobileMenu) {
+            closeMobileMenu.addEventListener('click', closeMenu);
+        }
+
+        mobileMenu.addEventListener('click', function(e) {
+            if (e.target === mobileMenu) {
+                closeMenu();
+            }
+        });
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const animatedElements = document.querySelectorAll('.product-card, .info-card, .benefit-item, .product-card-catalog');
+            animatedElements.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+        });
+
+        {% if user.is_authenticated and user.is_admin_user %}
+        let notificationsData = [];
+        const notificationsModal = document.getElementById('notificationsModal');
+        const notificationsBtn = document.getElementById('notificationsBtn');
+        const closeModalBtn = document.getElementById('closeNotificationsModal');
+        const markAllReadModalBtn = document.getElementById('markAllReadModal');
+
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/admin/notifications/');
+                const data = await response.json();
+                notificationsData = data.notifications;
+                updateNotificationsUI();
+                updateNotificationsCount();
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        function updateNotificationsCount() {
+            const count = notificationsData.filter(n => !n.read).length;
+            const countSpan = document.getElementById('notificationsCount');
+
+            if (count > 0) {
+                countSpan.style.display = 'inline-block';
+                countSpan.textContent = count;
+            } else {
+                countSpan.style.display = 'none';
+            }
+        }
+
+        function updateNotificationsUI() {
+            const listDiv = document.getElementById('notificationsModalList');
+
+            if (listDiv) {
+                if (notificationsData.length === 0) {
+                    listDiv.innerHTML = '<div class="notification-empty">Нет новых заказов</div>';
+                } else {
+                    listDiv.innerHTML = notificationsData.map(notification => `
+                        <div class="notification-modal-item ${notification.read ? '' : 'unread'}">
+                            <div class="notification-modal-info" onclick="goToOrder(${notification.order_id})">
+                                <div class="notification-modal-title">Заказ #${notification.order_id}</div>
+                                <div class="notification-modal-text">Новый заказ от ${notification.user_name}</div>
+                                <div class="notification-modal-time">${notification.time_ago}</div>
+                            </div>
+                            ${!notification.read ? '<div class="notification-modal-badge"></div>' : ''}
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        function goToOrder(orderId) {
+            window.location.href = '/admin-panel/orders/';
+            closeModal();
+            fetch(`/admin/notification/read/${orderId}/`);
+        }
+
+        function openModal() {
+            notificationsModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            loadNotifications();
+        }
+
+        function closeModal() {
+            notificationsModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        async function markAllAsRead() {
+            await fetch('/admin/notifications/mark-all-read/');
+            notificationsData.forEach(n => n.read = true);
+            updateNotificationsUI();
+            updateNotificationsCount();
+        }
+
+        setInterval(() => {
+            fetch('/admin/notifications/count/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.count > 0) {
+                        const countSpan = document.getElementById('notificationsCount');
+                        countSpan.style.display = 'inline-block';
+                        countSpan.textContent = data.count;
+                        if (notificationsModal.style.display === 'flex') {
+                            loadNotifications();
+                        }
+                    }
+                });
+        }, 10000);
+
+        if (notificationsBtn) {
+            notificationsBtn.addEventListener('click', openModal);
+        }
+
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', closeModal);
+        }
+
+        if (markAllReadModalBtn) {
+            markAllReadModalBtn.addEventListener('click', markAllAsRead);
+        }
+
+        window.addEventListener('click', function(e) {
+            if (e.target === notificationsModal) {
+                closeModal();
+            }
+        });
+        {% endif %}
+    </script>
+    {% block extra_js %}{% endblock %}
+
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-column">
+                <div class="footer-logo">
+                    <img src="{% static 'img/logo.svg' %}" alt="Чит&Пак" class="logo-light">
+                    <img src="{% static 'img/logo2.svg' %}" alt="Чит&Пак" class="logo-dark">
+                </div>
+                <p class="footer-tagline">Ваш съедобный подарок</p>
+                <div class="footer-social">
+                </div>
+            </div>
+            <div class="footer-column">
+                <h4 class="footer-title">Информация</h4>
+                <ul class="footer-links">
+                    <li><a href="/catalog/">Каталог</a></li>
+                    <li><a href="/about/">О нас</a></li>
+                    <li><a href="/reviews/">Отзывы</a></li>
+                    <li><a href="#">Доставка и оплата</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4 class="footer-title">Контакты</h4>
+                <ul class="footer-links">
+                    <li><a href="tel:+79991234567">+7 (999) 123-45-67</a></li>
+                    <li>г.Чита, ул. Ленина, 52</li>
+                    <li>Ежедневно с 10:00 до 20:00</li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4 class="footer-title">Мы в соцсетях</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Instagram</a></li>
+                    <li><a href="#">Telegram-канал</a></li>
+                    <li><a href="#">VK</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Чит&Пак - букеты из клубники в шоколаде</p>
+        </div>
+    </div>
+</footer>
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+</script>
+</body>
+</html>

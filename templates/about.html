@@ -1,0 +1,433 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}О нас - Чит&Пак{% endblock %}
+
+{% block content %}
+<section class="about-hero">
+    <div class="about-hero-bg"></div>
+    <div class="container">
+        <div class="about-hero-content">
+            <h1 class="about-hero-title">О нас</h1>
+            <p class="about-hero-subtitle">Почему наши клиенты выбирают именно нас?</p>
+        </div>
+    </div>
+</section>
+
+<section class="about-stats">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">5000+</div>
+                <div class="stat-label">Довольных клиентов</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">127</div>
+                <div class="stat-label">Положительных отзывов</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Приём заказов</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">10+</div>
+                <div class="stat-label">Лет на рынке</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="about-features">
+    <div class="container">
+        <div class="about-features-wrapper">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <img src="{% static 'img/eco-1.svg' %}" alt="Иконка">
+                </div>
+                <p class="feature-text">Клубника только свежая, шоколад высокого качества</p>
+            </div>
+            <div class="feature-divider"></div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <img src="{% static 'img/dlvr-1.svg' %}" alt="Иконка">
+                </div>
+                <p class="feature-text">Работаем с доставкой - привезём в день заказа</p>
+            </div>
+            <div class="feature-divider"></div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <img src="{% static 'img/heart-1.svg' %}" alt="Иконка">
+                </div>
+                <p class="feature-text">Большой выбор букетов на любой повод</p>
+            </div>
+            <div class="feature-divider"></div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <img src="{% static 'img/hand-1.svg' %}" alt="Иконка">
+                </div>
+                <p class="feature-text">Индивидуальный подход к каждому заказу</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="about-story">
+    <div class="container">
+        <div class="about-story-wrapper">
+            <div class="about-story-text">
+                <h2 class="about-story-title">Почему сладкий букет - это так важно?</h2>
+                <p class="about-story-description">
+                    Мы работаем для тех, кто хочет удивить и порадовать близких необычным подарком. Сладкий букет из клубники в шоколаде - это сочетание вкуса, красоты и внимания к деталям. Каждый букет собирается вручную с учётом пожеланий клиента. Нам важно помочь с выбором идеального подарка к любому празднику, учитывая предпочтения того, кто будет получать сладкий сюрприз. Подарите сладость с любовью.
+                </p>
+            </div>
+            <div class="about-story-image">
+                <img src="{% static 'img/4.jpg' %}" alt="История компании">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="about-promo">
+    <div class="container">
+        <div class="about-promo-wrapper">
+            <div class="about-promo-content">
+                <h2 class="about-promo-title">Букет, который говорит за вас</h2>
+                <p class="about-promo-subtitle">Выбирайте лучший подарок с ЧИТ&Пак</p>
+                <a href="/catalog/" class="about-promo-btn">Перейти в каталог</a>
+            </div>
+            <div class="about-promo-image">
+                <img src="{% static 'img/1.png' %}" alt="Сладкие букеты">
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.about-hero {
+    position: relative;
+    min-height: 450px;
+    background: var(--bg-page);
+    margin-top: -72px;
+    padding-top: 72px;
+    display: flex;
+    align-items: center;
+}
+
+.about-hero-bg {
+    position: absolute;
+    top: 72px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 72px);
+    background-image: url('/static/img/1bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.3;
+    z-index: 0;
+}
+
+[data-theme="dark"] .about-hero-bg {
+    opacity: 0.15;
+}
+
+.about-hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 60px 0;
+    text-align: left;
+}
+
+.about-hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+.about-hero-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.about-stats {
+    padding: 60px 0;
+    background: var(--bg-page);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 30px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-5px);
+}
+
+.stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.stat-label {
+    font-size: 14px;
+    opacity: 0.7;
+    margin-top: 8px;
+}
+
+.about-features {
+    padding: 50px 0;
+    background: var(--bg-page);
+}
+
+.about-features-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid #605151;
+    border-bottom: 1px solid #605151;
+    padding: 50px 0;
+}
+
+[data-theme="dark"] .about-features-wrapper {
+    border-top: 1px solid #BEB3AB;
+    border-bottom: 1px solid #BEB3AB;
+}
+
+.feature-item {
+    flex: 1;
+    text-align: center;
+}
+
+.feature-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feature-icon img {
+    width: 45px;
+    height: 45px;
+    filter: brightness(0);
+    opacity: 0.8;
+}
+
+[data-theme="dark"] .feature-icon img {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+
+.feature-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    padding: 0 10px;
+    line-height: 1.4;
+}
+
+.feature-divider {
+    width: 1px;
+    height: 100px;
+    background: #605151;
+}
+
+[data-theme="dark"] .feature-divider {
+    background: #BEB3AB;
+}
+
+.about-story {
+    padding: 70px 0;
+    background: var(--bg-page);
+}
+
+.about-story-wrapper {
+    display: flex;
+    gap: 70px;
+    align-items: center;
+}
+
+.about-story-text {
+    flex: 1;
+}
+
+.about-story-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 30px;
+}
+
+.about-story-description {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    opacity: 0.85;
+}
+
+.about-story-image {
+    flex-shrink: 0;
+    width: 350px;
+}
+
+.about-story-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+}
+
+.about-promo {
+    padding: 50px 0 70px;
+    background: var(--bg-page);
+}
+
+.about-promo-wrapper {
+    background: var(--bg-card);
+    padding: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 50px;
+    border-radius: 12px;
+}
+
+.about-promo-content {
+    flex: 1;
+}
+
+.about-promo-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+.about-promo-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 30px;
+}
+
+.about-promo-btn {
+    display: inline-block;
+    padding: 14px 36px;
+    background: #605151;
+    color: #D9D0C9;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .about-promo-btn {
+    background: #302B27;
+    color: #D9D0C9;
+}
+
+.about-promo-btn:hover {
+    background: #302B27;
+}
+
+[data-theme="dark"] .about-promo-btn:hover {
+    background: #605151;
+}
+
+.about-promo-image {
+    flex-shrink: 0;
+    width: 320px;
+}
+
+.about-promo-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+}
+
+@media (max-width: 992px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .about-features-wrapper {
+        flex-wrap: wrap;
+    }
+    .feature-divider {
+        display: none;
+    }
+    .feature-item {
+        min-width: 180px;
+        margin-bottom: 25px;
+    }
+    .about-story-wrapper {
+        flex-direction: column;
+    }
+    .about-story-image {
+        width: 100%;
+        max-width: 380px;
+    }
+    .about-promo-wrapper {
+        flex-direction: column;
+        text-align: center;
+    }
+    .about-promo-image {
+        width: 100%;
+        max-width: 280px;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    .about-hero-title {
+        font-size: 40px;
+    }
+    .about-hero-subtitle {
+        font-size: 20px;
+    }
+    .about-story-title {
+        font-size: 32px;
+    }
+    .about-story-description {
+        font-size: 16px;
+    }
+    .about-promo-title {
+        font-size: 32px;
+    }
+    .about-promo-subtitle {
+        font-size: 18px;
+    }
+    .about-promo-wrapper {
+        padding: 30px;
+    }
+}
+</style>
+{% endblock %}

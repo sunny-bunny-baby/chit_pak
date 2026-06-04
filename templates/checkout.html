@@ -1,0 +1,506 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Оформление заказа - Чит&Пак{% endblock %}
+
+{% block content %}
+<section class="checkout-section">
+    <div class="container">
+        <h1 class="checkout-title">Оформление заказа</h1>
+
+        <div class="checkout-wrapper">
+            <!-- Форма оформления -->
+            <div class="checkout-form-container">
+                <form method="POST" class="checkout-form" id="checkoutForm">
+                    {% csrf_token %}
+
+                    <div class="form-section">
+                        <h2 class="form-section-title">Контактные данные</h2>
+
+                        <div class="form-group">
+                            <label for="name">Имя *</label>
+                            <input type="text" id="name" name="name" value="{{ user.get_full_name|default:user.username }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Телефон *</label>
+                            <input type="tel" id="phone" name="phone" value="{{ user.phone }}" required placeholder="+7 (999) 123-45-67">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" name="email" value="{{ user.email }}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2 class="form-section-title">Адрес доставки</h2>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="city">Город *</label>
+                                <input type="text" id="city" name="city" required placeholder="Москва">
+                            </div>
+                            <div class="form-group">
+                                <label for="postal_code">Индекс</label>
+                                <input type="text" id="postal_code" name="postal_code" placeholder="123456">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address">Улица, дом, квартира *</label>
+                            <input type="text" id="address" name="address" required placeholder="ул. Примерная, д. 1, кв. 1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="entrance">Подъезд / этаж</label>
+                            <input type="text" id="entrance" name="entrance" placeholder="Подъезд 1, этаж 5">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2 class="form-section-title">Способ доставки</h2>
+
+                        <div class="delivery-options">
+                            <label class="delivery-option">
+                                <input type="radio" name="delivery" value="courier" checked>
+                                <span class="delivery-option-title">Курьером</span>
+                                <span class="delivery-option-price">300 ₽</span>
+                                <span class="delivery-option-desc">Доставка по городу от 1 дня</span>
+                            </label>
+                            <label class="delivery-option">
+                                <input type="radio" name="delivery" value="pickup">
+                                <span class="delivery-option-title">Самовывоз</span>
+                                <span class="delivery-option-price">Бесплатно</span>
+                                <span class="delivery-option-desc">Из пункта выдачи с 10:00 до 20:00</span>
+                            </label>
+                            <label class="delivery-option">
+                                <input type="radio" name="delivery" value="post">
+                                <span class="delivery-option-title">Почтой России</span>
+                                <span class="delivery-option-price">от 200 ₽</span>
+                                <span class="delivery-option-desc">Срок доставки 3-7 дней</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2 class="form-section-title">Способ оплаты</h2>
+
+                        <div class="payment-options">
+                            <label class="payment-option">
+                                <input type="radio" name="payment" value="card" checked>
+                                <span class="payment-option-title">Банковской картой</span>
+                                <span class="payment-option-desc">Visa, MasterCard, МИР</span>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payment" value="cash">
+                                <span class="payment-option-title">Наличными</span>
+                                <span class="payment-option-desc">При получении</span>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payment" value="online">
+                                <span class="payment-option-title">Онлайн оплата</span>
+                                <span class="payment-option-desc">Безопасный платеж через сервис</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="comment">Комментарий к заказу</label>
+                            <textarea id="comment" name="comment" rows="3" placeholder="Пожелания по доставке, удобное время и т.д."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Сводка заказа -->
+            <div class="order-summary-container">
+                <div class="order-summary">
+                    <h2 class="order-summary-title">Ваш заказ</h2>
+
+                    <div class="order-items">
+                        {% for item in cart.items.all %}
+                        <div class="order-item">
+                            <div class="order-item-info">
+                                <div class="order-item-image">
+                                    {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                                    {% else %}
+                                    <div class="image-placeholder-small"></div>
+                                    {% endif %}
+                                </div>
+                                <div class="order-item-details">
+                                    <div class="order-item-name">{{ item.product.name }}</div>
+                                    <div class="order-item-price">{{ item.product.price }} ₽ × {{ item.quantity }}</div>
+                                </div>
+                            </div>
+                            <div class="order-item-total">{{ item.get_total_price }} ₽</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="order-totals">
+                        <div class="order-subtotal">
+                            <span>Товары</span>
+                            <span>{{ cart.get_total_price }} ₽</span>
+                        </div>
+                        <div class="order-delivery" id="deliveryCostBlock">
+                            <span>Доставка</span>
+                            <span id="deliveryCost">300 ₽</span>
+                        </div>
+                        <div class="order-total">
+                            <span>Итого</span>
+                            <span id="orderTotal">{{ cart.get_total_price|add:300 }} ₽</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" form="checkoutForm" class="btn-submit-order">Оформить заказ</button>
+
+                    <div class="order-agreement">
+                        <p>Нажимая кнопку, вы соглашаетесь с <a href="#">условиями обработки персональных данных</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.checkout-section {
+    padding: 40px 0 60px;
+    background: var(--bg-page);
+    min-height: calc(100vh - 72px);
+}
+
+.checkout-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 30px;
+}
+
+.checkout-wrapper {
+    display: flex;
+    gap: 40px;
+}
+
+.checkout-form-container {
+    flex: 1.5;
+}
+
+.order-summary-container {
+    flex: 1;
+}
+
+.form-section {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.form-section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.delivery-options,
+.payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.delivery-option,
+.payment-option {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: var(--bg-page);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.delivery-option:hover,
+.payment-option:hover {
+    border-color: var(--accent);
+}
+
+.delivery-option input,
+.payment-option input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+.delivery-option-title,
+.payment-option-title {
+    font-weight: 600;
+    min-width: 100px;
+}
+
+.delivery-option-price {
+    color: var(--accent);
+    font-weight: 600;
+    margin-left: auto;
+}
+
+.delivery-option-desc,
+.payment-option-desc {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-left: auto;
+}
+
+.order-summary {
+    position: sticky;
+    top: 100px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 25px;
+}
+
+.order-summary-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.order-items {
+    margin-bottom: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.order-item-info {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.order-item-image {
+    width: 50px;
+    height: 50px;
+    background: #605151;
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.order-item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-placeholder-small {
+    width: 100%;
+    height: 100%;
+    background: #605151;
+}
+
+.order-item-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.order-item-price {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.order-item-total {
+    font-weight: 600;
+}
+
+.order-totals {
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.order-subtotal,
+.order-delivery,
+.order-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+}
+
+.order-total {
+    font-size: 18px;
+    font-weight: 700;
+    padding-top: 12px;
+    margin-top: 8px;
+    border-top: 1px solid var(--border-color);
+    color: var(--accent);
+}
+
+.btn-submit-order {
+    width: 100%;
+    padding: 16px;
+    background: #605151;
+    color: #d9d0c9;
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+.btn-submit-order:hover {
+    background: #302b27;
+    transform: translateY(-2px);
+}
+
+.order-agreement {
+    text-align: center;
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 15px;
+}
+
+.order-agreement a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+@media (max-width: 992px) {
+    .checkout-wrapper {
+        flex-direction: column;
+    }
+
+    .order-summary-container {
+        order: -1;
+    }
+
+    .order-summary {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .checkout-title {
+        font-size: 28px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .form-section {
+        padding: 20px;
+    }
+
+    .delivery-option,
+    .payment-option {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .delivery-option-price,
+    .delivery-option-desc {
+        margin-left: 33px;
+    }
+}
+</style>
+
+<script>
+    // Обновление стоимости доставки
+    const deliveryInputs = document.querySelectorAll('input[name="delivery"]');
+    const deliveryCostSpan = document.getElementById('deliveryCost');
+    const orderTotalSpan = document.getElementById('orderTotal');
+    const cartTotal = {{ cart.get_total_price }};
+
+    deliveryInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            let deliveryCost = 0;
+            if (this.value === 'courier') {
+                deliveryCost = 300;
+            } else if (this.value === 'post') {
+                deliveryCost = 200;
+            } else if (this.value === 'pickup') {
+                deliveryCost = 0;
+            }
+
+            deliveryCostSpan.textContent = deliveryCost + ' ₽';
+            orderTotalSpan.textContent = (cartTotal + deliveryCost) + ' ₽';
+        });
+    });
+
+    // Автоматическая маска телефона
+    const phoneInput = document.getElementById('phone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9+]/g, '');
+            if (value.startsWith('+')) {
+                value = value.substring(0, 12);
+            } else {
+                value = value.substring(0, 11);
+            }
+            e.target.value = value;
+        });
+    }
+</script>
+{% endblock %}

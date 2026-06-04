@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Корзина - Чит&Пак{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <h1 class="section-title">Корзина</h1>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% if cart and cart.items.all %}
+            <div class="cart-items">
+                {% for item in cart.items.all %}
+                <div class="cart-item">
+                    <div class="item-info">
+                        <h3>{{ item.product.name }}</h3>
+                        <p>{{ item.product.price }} ₽</p>
+                        {% if item.chocolate_type and item.chocolate_type != 'none' %}
+                        <p class="option-text">Шоколад: {{ item.chocolate_type }}{% if item.chocolate_color %} ({{ item.chocolate_color }}){% endif %}</p>
+                        {% endif %}
+                        {% if item.packaging_type and item.packaging_type != 'none' %}
+                        <p class="option-text">Упаковка: {{ item.packaging_type }}{% if item.packaging_color %} ({{ item.packaging_color }}){% endif %}</p>
+                        {% endif %}
+                        {% if item.extra_berries %}
+                        <p class="option-text">Доп. ягоды: голубика</p>
+                        {% endif %}
+                        {% if item.flower_type %}
+                        <p class="option-text">Цветы: {{ item.flower_type }}{% if item.flower_color %} ({{ item.flower_color }}){% endif %}</p>
+                        {% endif %}
+                        {% if item.extra_price > 0 %}
+                        <p class="option-text">Доплата за опции: +{{ item.extra_price }} ₽</p>
+                        {% endif %}
+                    </div>
+                    <div class="item-quantity">
+                        <form method="POST" action="/cart/update/{{ item.id }}/">
+                            {% csrf_token %}
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="99" class="cart-quantity">
+                            <button type="submit" class="btn-update">Обновить</button>
+                        </form>
+                    </div>
+                    <div class="item-total">
+                        <strong>{{ item.get_total_price }} ₽</strong>
+                    </div>
+                    <div class="item-remove">
+                        <a href="/cart/remove/{{ item.id }}/" class="btn-remove">Удалить</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="cart-summary">
+                <h3>Итого: {{ cart.get_total_price }} ₽</h3>
+                <a href="/checkout/" class="btn-primary">Оформить заказ</a>
+            </div>
+        {% else %}
+            <p>Корзина пуста</p>
+            <a href="/catalog/" class="btn-primary">Перейти в каталог</a>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: var(--bg-card);
+        margin-bottom: 15px;
+        border-radius: var(--radius);
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .item-info {
+        flex: 2;
+    }
+
+    .item-info .option-text {
+        font-size: 12px;
+        opacity: 0.7;
+        margin-top: 5px;
+    }
+
+    .item-quantity input {
+        width: 60px;
+        padding: 5px;
+        margin-right: 10px;
+    }
+
+    .btn-update, .btn-remove {
+        padding: 5px 10px;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 12px;
+    }
+
+    .btn-remove {
+        background: #dc3545;
+    }
+
+    .cart-summary {
+        margin-top: 30px;
+        padding: 20px;
+        background: var(--bg-card);
+        border-radius: var(--radius);
+        text-align: right;
+    }
+
+    .alert-success {
+        padding: 12px;
+        margin-bottom: 20px;
+        border-radius: var(--radius);
+        background: #d4edda;
+        color: #155724;
+    }
+
+    @media (max-width: 768px) {
+        .cart-item {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}

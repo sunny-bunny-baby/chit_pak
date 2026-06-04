@@ -1,0 +1,661 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Личный кабинет - Чит&Пак{% endblock %}
+
+{% block content %}
+<section class="profile-section">
+    <div class="container">
+        <div class="profile-layout">
+            <aside class="profile-sidebar">
+                <div class="profile-avatar">
+                    {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="avatar-img">
+                    {% else %}
+                    <div class="avatar-circle">
+                        <span class="avatar-initials">{{ user.username|make_list|first|upper }}</span>
+                    </div>
+                    {% endif %}
+                    <form method="POST" enctype="multipart/form-data" id="avatarForm" class="avatar-form">
+                        {% csrf_token %}
+                        <label for="avatarUpload" class="avatar-upload-btn">Сменить фото</label>
+                        <input type="file" name="avatar" id="avatarUpload" accept="image/*" style="display: none;">
+                    </form>
+                    <h3 class="profile-name">{{ user.get_full_name|default:user.username }}</h3>
+                    <p class="profile-email">{{ user.email }}</p>
+                </div>
+
+                <nav class="profile-nav">
+                    <ul>
+                        <li><a href="#orders" class="nav-link active" data-tab="orders">Мои заказы</a></li>
+                        <li><a href="#favorites" class="nav-link" data-tab="favorites">Избранное</a></li>
+                        <li><a href="#reviews" class="nav-link" data-tab="reviews">Мои отзывы</a></li>
+                        <li><a href="#settings" class="nav-link" data-tab="settings">Настройки</a></li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Правая основная область -->
+            <div class="profile-content">
+                <!-- Вкладка: Мои заказы -->
+                <div id="orders-tab" class="tab-content active">
+                    <h2 class="content-title">Мои заказы</h2>
+
+                    {% if orders %}
+                    <div class="orders-list">
+                        {% for order in orders %}
+                        <div class="order-card" onclick="showOrderDetails({{ order.id }})">
+                            <div class="order-image">
+                                {% if order.items.first.product.image %}
+                                <img src="{{ order.items.first.product.image.url }}" alt="Заказ #{{ order.id }}">
+                                {% else %}
+                                <div class="order-image-placeholder"></div>
+                                {% endif %}
+                            </div>
+                            <div class="order-info">
+                                <div class="order-header">
+                                    <h3 class="order-number">Заказ № {{ order.id }}</h3>
+                                    <span class="order-status status-{{ order.status }}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </div>
+                                <div class="order-details">
+                                    <p class="order-date">{{ order.created_at|date:"d.m.Y, H:i" }}</p>
+                                    <p class="order-amount">Сумма: {{ order.total_price }} ₽</p>
+                                    <p class="order-items-count">Товаров: {{ order.items.count }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-orders">
+                        <p>У вас пока нет заказов</p>
+                        <a href="/catalog/" class="btn-primary">Перейти в каталог</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Вкладка: Избранное -->
+                <div id="favorites-tab" class="tab-content">
+                    <h2 class="content-title">Избранное</h2>
+                    <div class="favorites-list">
+                        <p class="empty-message">У вас пока нет избранных товаров</p>
+                    </div>
+                </div>
+
+                <!-- Вкладка: Мои отзывы -->
+                <div id="reviews-tab" class="tab-content">
+                    <h2 class="content-title">Мои отзывы</h2>
+                    {% if user_reviews %}
+                    <div class="user-reviews-list">
+                        {% for review in user_reviews %}
+                        <div class="user-review-card">
+                            <div class="review-header">
+                                <div>
+                                    <h4>{{ review.product.name }}</h4>
+                                    <div class="review-rating">
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= review.rating %}
+                                                <span class="star filled">★</span>
+                                            {% else %}
+                                                <span class="star">★</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="review-date">{{ review.created_at|date:"d.m.Y" }}</div>
+                            </div>
+                            <p class="review-comment">{{ review.comment }}</p>
+                            {% if not review.is_approved %}
+                            <p class="review-warning">Отзыв ожидает модерации</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="empty-message">Вы еще не оставили ни одного отзыва</p>
+                    {% endif %}
+                </div>
+
+                <!-- Вкладка: Настройки -->
+                <div id="settings-tab" class="tab-content">
+                    <h2 class="content-title">Настройки профиля</h2>
+                    <form method="POST" class="profile-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>Имя пользователя</label>
+                            <input type="text" name="username" value="{{ user.username }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email" value="{{ user.email }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Телефон</label>
+                            <input type="tel" name="phone" value="{{ user.phone }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Адрес</label>
+                            <textarea name="address" rows="3">{{ user.address }}</textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Новый пароль</label>
+                                <input type="password" name="new_password" placeholder="Оставьте пустым, чтобы не менять">
+                            </div>
+                            <div class="form-group">
+                                <label>Подтверждение пароля</label>
+                                <input type="password" name="confirm_password" placeholder="Повторите новый пароль">
+                            </div>
+                        </div>
+                        <button type="submit" name="update_profile" class="btn-primary">Сохранить изменения</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Модальное окно с деталями заказа -->
+<div id="orderModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Детали заказа #<span id="modalOrderId"></span></h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <!-- Загружается через JS -->
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-section {
+    padding: 40px 0 60px;
+    background: var(--bg-page);
+    min-height: calc(100vh - 72px);
+}
+
+.profile-layout {
+    display: flex;
+    gap: 40px;
+}
+
+/* Левая панель */
+.profile-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+}
+
+.profile-avatar {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.avatar-circle {
+    width: 120px;
+    height: 120px;
+    background: var(--bg-card);
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    border: 3px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto 16px;
+    border: 3px solid var(--accent);
+}
+
+.avatar-initials {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.avatar-form {
+    margin-bottom: 15px;
+}
+
+.avatar-upload-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.avatar-upload-btn:hover {
+    border-color: var(--accent);
+}
+
+.profile-name {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text-primary);
+    margin-top: 10px;
+}
+
+.profile-email {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 4px;
+}
+
+.profile-nav ul {
+    list-style: none;
+}
+
+.profile-nav li {
+    margin-bottom: 8px;
+}
+
+.nav-link {
+    display: block;
+    padding: 12px 16px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--text-primary);
+    text-decoration: none;
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    background: rgba(0,0,0,0.05);
+    border-color: var(--border-color);
+}
+
+.nav-link.active {
+    background: var(--bg-card);
+    border-color: var(--accent);
+    font-weight: 600;
+}
+
+/* Правая область */
+.profile-content {
+    flex: 1;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.content-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    font-size: 28px;
+    color: var(--text-primary);
+    margin-bottom: 30px;
+}
+
+/* Заказы */
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.order-card {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.order-image {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    background: #605151;
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.order-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.order-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #605151;
+}
+
+.order-info {
+    flex: 1;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.order-number {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--accent);
+}
+
+.order-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.order-details p {
+    font-size: 14px;
+    color: var(--text-primary);
+    opacity: 0.8;
+}
+
+.order-status {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 20px;
+}
+
+.status-pending { background: #ffc107; color: #302b27; }
+.status-confirmed { background: #28a745; color: white; }
+.status-shipped { background: #17a2b8; color: white; }
+.status-delivered { background: #2c4c61; color: white; }
+.status-cancelled { background: #dc3545; color: white; }
+
+/* Пустые состояния */
+.empty-orders,
+.empty-message {
+    text-align: center;
+    padding: 50px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+}
+
+.empty-orders p,
+.empty-message {
+    margin-bottom: 20px;
+    opacity: 0.7;
+}
+
+/* Отзывы */
+.user-reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.user-review-card {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: var(--radius);
+}
+
+.user-review-card .review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.user-review-card .review-header h4 {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.review-rating .star {
+    color: #ccc;
+    font-size: 14px;
+}
+
+.review-rating .star.filled {
+    color: #e6b35c;
+}
+
+.review-comment {
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 12px 0;
+}
+
+.review-warning {
+    font-size: 12px;
+    color: #e6b35c;
+    margin-top: 10px;
+}
+
+/* Форма настроек */
+.profile-form {
+    background: var(--bg-card);
+    padding: 25px;
+    border-radius: var(--radius);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-page);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Модальное окно */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--bg-page);
+    border-radius: var(--radius);
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .profile-layout {
+        flex-direction: column;
+    }
+
+    .profile-sidebar {
+        width: 100%;
+    }
+
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .order-details {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+    // Переключение вкладок
+    const tabs = document.querySelectorAll('.nav-link');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            const tabId = this.dataset.tab;
+
+            // Убираем активный класс у всех вкладок
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            // Скрываем все контенты
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Показываем выбранный контент
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+        });
+    });
+
+    // Загрузка аватарки
+    const avatarUpload = document.getElementById('avatarUpload');
+    const avatarForm = document.getElementById('avatarForm');
+
+    if (avatarUpload) {
+        avatarUpload.addEventListener('change', function() {
+            avatarForm.submit();
+        });
+    }
+
+    // Детали заказа
+   function showOrderDetails(orderId) {
+    const modal = document.getElementById('orderModal');
+    const modalOrderId = document.getElementById('modalOrderId');
+    const modalBody = document.getElementById('modalBody');
+
+    modalOrderId.textContent = orderId;
+
+    // AJAX запрос для получения деталей заказа
+    fetch(`/order-details/${orderId}/`)
+        .then(response => response.json())
+        .then(data => {
+            let itemsHtml = '';
+            data.items.forEach(item => {
+                itemsHtml += `
+                    <div class="order-item-detail">
+                        <span>${item.name} × ${item.quantity}</span>
+                        <span>${item.total} ₽</span>
+                    </div>
+                `;
+            });
+
+            modalBody.innerHTML = `
+                <div class="order-detail-item">
+                    <strong>Статус:</strong> <span class="status-${data.status_class}">${data.status}</span>
+                </div>
+                <div class="order-detail-item">
+                    <strong>Дата:</strong> ${data.date}
+                </div>
+                <div class="order-detail-item">
+                    <strong>Товары:</strong>
+                    <div class="order-items-detail" style="margin-top: 10px;">${itemsHtml}</div>
+                </div>
+                <div class="order-detail-item">
+                    <strong>Адрес доставки:</strong> ${data.address || 'Не указан'}
+                </div>
+                <div class="order-detail-item">
+                    <strong>Телефон:</strong> ${data.phone || 'Не указан'}
+                </div>
+                <div class="order-detail-item">
+                    <strong>Комментарий:</strong> ${data.comment || 'Нет'}
+                </div>
+                <div class="order-total-detail" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+                    <strong>Итого:</strong> ${data.total} ₽
+                </div>
+            `;
+        })
+        .catch(error => {
+            modalBody.innerHTML = '<p>Ошибка загрузки данных заказа</p>';
+        });
+
+    modal.classList.add('show');
+}
+
+    function closeModal() {
+        document.getElementById('orderModal').classList.remove('show');
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('orderModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+</script>
+{% endblock %}

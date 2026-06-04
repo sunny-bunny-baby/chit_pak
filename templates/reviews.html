@@ -1,0 +1,589 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Отзывы - Чит&Пак{% endblock %}
+
+{% block content %}
+<section class="reviews-section">
+    <div class="container">
+        <h1 class="reviews-title">Отзывы наших клиентов</h1>
+        <p class="reviews-subtitle">Узнайте, что говорят о наших букетах</p>
+
+        <div class="reviews-stats">
+            <div class="stats-card">
+                <div class="stats-number">127</div>
+                <div class="stats-label">Всего отзывов</div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-number">4.9</div>
+                <div class="stats-label">Средняя оценка</div>
+            </div>
+        </div>
+
+        <button id="openReviewModalBtn" class="btn-primary review-btn">Оставить отзыв</button>
+
+        <div class="reviews-list">
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Анна С.</div>
+                            <div class="review-date">2 дня назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Классический букет</strong></div>
+                <div class="review-comment">Заказывала букет на день рождения подруги. Всё привезли вовремя, клубника свежая, шоколад вкусный. Подруга была в восторге! Спасибо большое!</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Михаил К.</div>
+                            <div class="review-date">5 дней назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Премиум букет</strong></div>
+                <div class="review-comment">Очень красивая упаковка, ягоды сочные. Брал на свидание, эффект превзошёл ожидания. Обязательно закажу ещё!</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Екатерина В.</div>
+                            <div class="review-date">1 неделю назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Люкс букет</strong></div>
+                <div class="review-comment">Делали заказ на свадьбу. 5 букетов для гостей. Всё выполнили качественно, доставили вовремя. Гости были приятно удивлены.</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Ольга М.</div>
+                            <div class="review-date">2 недели назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Классический букет</strong></div>
+                <div class="review-comment">Первый раз заказывала сладкий букет. Очень понравилось! Клубника огромная, шоколад нежный. Обязательно закажу ещё родителям.</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Дмитрий П.</div>
+                            <div class="review-date">3 недели назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Премиум букет</strong></div>
+                <div class="review-comment">Отличный сервис, оператор всё объяснил, помог с выбором. Букет получился шикарным. Рекомендую всем!</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Мария И.</div>
+                            <div class="review-date">1 месяц назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Классический букет</strong></div>
+                <div class="review-comment">Купила букет для мамы на 8 Марта. Она была в восторге! Вкусно, красиво, необычно. Спасибо вашей команде.</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Алексей Р.</div>
+                            <div class="review-date">1 месяц назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Люкс букет</strong></div>
+                <div class="review-comment">Букет просто сказочный! Клубника тает во рту. Заказывал с доставкой, курьер вежливый, всё привёз целым. Буду заказывать ещё.</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Светлана Д.</div>
+                            <div class="review-date">1 месяц назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Премиум букет</strong></div>
+                <div class="review-comment">Отличное качество, доставка в день заказа. Очень удобно, когда нужно срочно. Букет получился очень красивым.</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Татьяна С.</div>
+                            <div class="review-date">1.5 месяца назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Классический букет</strong></div>
+                <div class="review-comment">Подарила мужу на 14 февраля. Очень вкусно, необычный подарок. Муж оценил, сказал, что это гениально!</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Елена К.</div>
+                            <div class="review-date">2 месяца назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Люкс букет</strong></div>
+                <div class="review-comment">Шоколад бельгийский, клубника свежайшая. Упаковка стильная. В общем, одни плюсы. Спасибо!</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Андрей Н.</div>
+                            <div class="review-date">2 месяца назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Премиум букет</strong></div>
+                <div class="review-comment">Заказывали коллеге на день рождения. Весь офис ахнул. Очень вкусно и красиво. Обязательно закажем ещё.</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Юлия З.</div>
+                            <div class="review-date">2.5 месяца назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Классический букет</strong></div>
+                <div class="review-comment">Брала для фотосессии. Выглядит очень фотогенично. После съёмки съели с удовольствием. Всем советую!</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Игорь В.</div>
+                            <div class="review-date">3 месяца назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Люкс букет</strong></div>
+                <div class="review-comment">Доставка быстрая, букет очень красивый. Клубника крупная, шоколад вкусный. Однозначно 5 звёзд.</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Наталья Ф.</div>
+                            <div class="review-date">3 месяца назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Премиум букет</strong></div>
+                <div class="review-comment">Подарок для девушки на годовщину. Она была в шоке от красоты и вкуса. Спасибо большое за такой классный сервис!</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar"></div>
+                        <div>
+                            <div class="reviewer-name">Владимир Г.</div>
+                            <div class="review-date">3.5 месяца назад</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <div class="review-product">Товар: <strong>Классический букет</strong></div>
+                <div class="review-comment">Отличный вариант для тех, кто хочет удивить. Соотношение цена-качество отличное. Вернусь ещё!</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="reviewModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Оставить отзыв</h2>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form method="POST" enctype="multipart/form-data" id="reviewForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Товар</label>
+                    <select name="product_id" required>
+                        <option value="">Выберите товар</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}">{{ product.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Оценка</label>
+                    <div class="rating-input">
+                        <input type="radio" name="rating" value="5" id="modalStar5"><label for="modalStar5">★</label>
+                        <input type="radio" name="rating" value="4" id="modalStar4"><label for="modalStar4">★</label>
+                        <input type="radio" name="rating" value="3" id="modalStar3"><label for="modalStar3">★</label>
+                        <input type="radio" name="rating" value="2" id="modalStar2"><label for="modalStar2">★</label>
+                        <input type="radio" name="rating" value="1" id="modalStar1"><label for="modalStar1">★</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Комментарий</label>
+                    <textarea name="comment" rows="4" required placeholder="Поделитесь впечатлениями о букете..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Фотография (необязательно)</label>
+                    <input type="file" name="image" accept="image/*">
+                </div>
+                <button type="submit" class="btn-submit">Отправить отзыв</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.reviews-section {
+    padding: 50px 0 70px;
+    background: var(--bg-page);
+    min-height: calc(100vh - 72px);
+}
+
+.reviews-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.reviews-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    color: var(--text-primary);
+    text-align: center;
+    opacity: 0.7;
+    margin-bottom: 40px;
+}
+
+.reviews-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.stats-card {
+    text-align: center;
+    padding: 20px 40px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+}
+
+.stats-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.stats-label {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.review-btn {
+    display: block;
+    width: fit-content;
+    margin: 0 auto 40px;
+}
+
+.reviews-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.review-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 25px;
+    transition: transform 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-3px);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.reviewer-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #605151;
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.review-date {
+    font-size: 12px;
+    opacity: 0.6;
+    margin-top: 4px;
+}
+
+.review-rating {
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: #e6b35c;
+}
+
+.review-product {
+    font-size: 14px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.review-product strong {
+    color: var(--accent);
+}
+
+.review-comment {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--bg-page);
+    border-radius: var(--radius);
+    width: 500px;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.form-group select,
+.form-group textarea,
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-page);
+}
+
+.rating-input {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.rating-input input {
+    display: none;
+}
+
+.rating-input label {
+    font-size: 30px;
+    color: #ccc;
+    cursor: pointer;
+}
+
+.rating-input input:checked ~ label,
+.rating-input label:hover,
+.rating-input label:hover ~ label {
+    color: #e6b35c;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: var(--text-primary);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+@media (max-width: 992px) {
+    .reviews-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .reviews-title {
+        font-size: 32px;
+    }
+    .reviews-stats {
+        flex-direction: column;
+        align-items: center;
+    }
+    .stats-card {
+        width: 200px;
+    }
+}
+</style>
+
+<script>
+    const modal = document.getElementById('reviewModal');
+    const openBtn = document.getElementById('openReviewModalBtn');
+    const closeBtn = document.querySelector('.modal-close');
+
+    if (openBtn) {
+        openBtn.addEventListener('click', () => {
+            modal.classList.add('show');
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('show');
+        });
+    }
+
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+        }
+    });
+
+    const ratingInputs = document.querySelectorAll('.rating-input input');
+    ratingInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const labels = this.parentElement.querySelectorAll('label');
+            const value = parseInt(this.value);
+            labels.forEach((label, index) => {
+                if (5 - index <= value) {
+                    label.style.color = '#e6b35c';
+                } else {
+                    label.style.color = '#ccc';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

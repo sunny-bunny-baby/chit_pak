@@ -1,0 +1,620 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Заказы - Админ панель{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <h1 class="admin-title">Управление заказами</h1>
+
+        <div class="admin-tabs">
+            <a href="/admin-panel/" class="admin-tab">Товары</a>
+            <a href="/admin-panel/orders/" class="admin-tab active">Заказы</a>
+        </div>
+
+        <!-- Фильтры -->
+        <div class="admin-card">
+            <h2 class="admin-card-title">Фильтры</h2>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Статус заказа</label>
+                    <select id="statusFilter" onchange="window.location.href='/admin-panel/orders/?status='+this.value">
+                        <option value="">Все заказы</option>
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Поиск по номеру</label>
+                    <input type="text" id="orderSearch" placeholder="№ заказа или имя клиента..." class="search-input">
+                </div>
+            </div>
+        </div>
+
+        <!-- Список заказов -->
+        <div class="admin-card">
+            <h2 class="admin-card-title">
+                Заказы
+                <span class="orders-count">({{ orders|length }})</span>
+            </h2>
+
+            <div class="table-responsive">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>№ заказа</th>
+                            <th>Клиент</th>
+                            <th>Сумма</th>
+                            <th>Статус</th>
+                            <th>Дата</th>
+                            <th>Телефон</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        {% for order in orders %}
+                        <tr data-order-id="{{ order.id }}" data-order-number="{{ order.id }}" data-client-name="{{ order.user.username }}">
+                            <td class="order-number-cell">#{{ order.id }}</td>
+                            <td>
+                                <strong>{{ order.user.username }}</strong>
+                                <div class="user-email">{{ order.user.email }}</div>
+                            </td>
+                            <td class="order-price">{{ order.total_price }} ₽</td>
+                            <td>
+                                <span class="order-status status-{{ order.status }}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                            <td>{{ order.phone }}</td>
+                            <td>
+                                <button class="btn-view-order" onclick="showOrderDetails({{ order.id }})">Детали</button>
+                                <form method="POST" class="status-update-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="order_id" value="{{ order.id }}">
+                                    <select name="status" class="status-select">
+                                        {% for value, label in status_choices %}
+                                        <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn-update-status">Обновить</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">Заказов пока нет</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Модальное окно с деталями заказа -->
+<div id="orderModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Детали заказа #<span id="modalOrderId"></span></h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <!-- Содержимое загружается через JS -->
+        </div>
+    </div>
+</div>
+
+<style>
+/* ========== СТРАНИЦА ЗАКАЗОВ ========== */
+.admin-section {
+    padding: 40px 0 60px;
+    background: var(--bg-page);
+    min-height: calc(100vh - 72px);
+}
+
+.admin-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 30px;
+}
+
+/* Табы */
+.admin-tabs {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.admin-tab {
+    padding: 12px 24px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.admin-tab.active {
+    color: var(--accent);
+}
+
+.admin-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+}
+
+.admin-tab:hover {
+    color: var(--accent);
+}
+
+/* Карточки */
+.admin-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow);
+}
+
+.admin-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.orders-count {
+    font-size: 16px;
+    opacity: 0.7;
+    margin-left: 8px;
+}
+
+/* Фильтры */
+.filter-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-group label {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.filter-group select,
+.filter-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+    border-color: var(--accent);
+}
+
+/* Таблица заказов */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.orders-table th,
+.orders-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.orders-table th {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+    background: rgba(0,0,0,0.03);
+}
+
+.orders-table td {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+
+.order-number-cell {
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.user-email {
+    font-size: 12px;
+    opacity: 0.6;
+    margin-top: 2px;
+}
+
+.order-price {
+    font-weight: 700;
+}
+
+/* Статусы */
+.order-status {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-pending {
+    background: #ffc107;
+    color: #302b27;
+}
+
+.status-confirmed {
+    background: #28a745;
+    color: white;
+}
+
+.status-shipped {
+    background: #17a2b8;
+    color: white;
+}
+
+.status-delivered {
+    background: #2c4c61;
+    color: white;
+}
+
+.status-cancelled {
+    background: #dc3545;
+    color: white;
+}
+
+/* Форма обновления статуса */
+.status-update-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.status-select {
+    padding: 6px 10px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-size: 12px;
+}
+
+.btn-update-status {
+    padding: 6px 12px;
+    background: var(--accent);
+    color: var(--text-primary);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-update-status:hover {
+    background: var(--accent-hover);
+}
+
+.btn-view-order {
+    padding: 6px 12px;
+    background: #605151;
+    color: #d9d0c9;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.btn-view-order:hover {
+    background: #302b27;
+}
+
+/* Модальное окно */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--bg-page);
+    border-radius: var(--radius);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-card);
+}
+
+.modal-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 32px;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: opacity 0.3s ease;
+}
+
+.modal-close:hover {
+    opacity: 0.7;
+}
+
+.modal-body {
+    padding: 25px;
+    overflow-y: auto;
+    max-height: calc(80vh - 80px);
+}
+
+/* Детали заказа */
+.order-detail-item {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.order-detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--accent);
+}
+
+.detail-value {
+    font-size: 15px;
+}
+
+.products-list {
+    margin-top: 10px;
+}
+
+.product-in-order {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.product-name-order {
+    flex: 1;
+}
+
+.product-quantity-order {
+    width: 80px;
+    text-align: center;
+}
+
+.product-price-order {
+    width: 100px;
+    text-align: right;
+    font-weight: 600;
+}
+
+.order-total {
+    margin-top: 15px;
+    padding-top: 15px;
+    text-align: right;
+    font-weight: 700;
+    font-size: 18px;
+    border-top: 2px solid var(--border-color);
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .admin-card {
+        padding: 20px;
+    }
+
+    .admin-title {
+        font-size: 28px;
+    }
+
+    .orders-table th,
+    .orders-table td {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .status-update-form {
+        flex-direction: column;
+    }
+
+    .btn-view-order {
+        width: auto;
+    }
+
+    .filter-row {
+        flex-direction: column;
+    }
+
+    .modal-header h2 {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-tabs {
+        gap: 10px;
+    }
+
+    .admin-tab {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+
+    .orders-table {
+        font-size: 12px;
+    }
+
+    .order-status {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+}
+
+.text-center {
+    text-align: center;
+}
+</style>
+
+<script>
+    // Поиск по заказам
+    document.getElementById('orderSearch').addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#ordersTableBody tr');
+
+        rows.forEach(row => {
+            const orderNumber = row.querySelector('.order-number-cell')?.textContent || '';
+            const clientName = row.querySelector('td:nth-child(2) strong')?.textContent.toLowerCase() || '';
+
+            if (orderNumber.includes(searchTerm) || clientName.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Показать детали заказа
+    function showOrderDetails(orderId) {
+        const modal = document.getElementById('orderModal');
+        const modalOrderId = document.getElementById('modalOrderId');
+        const modalBody = document.getElementById('modalBody');
+
+        modalOrderId.textContent = orderId;
+
+        // Здесь можно сделать AJAX запрос для получения данных заказа
+        // Пока показываем заглушку
+        modalBody.innerHTML = `
+            <div class="order-detail-item">
+                <div class="detail-label">Информация о заказе</div>
+                <div class="detail-value">Заказ #${orderId} от 10 марта 2025</div>
+            </div>
+            <div class="order-detail-item">
+                <div class="detail-label">Товары в заказе</div>
+                <div class="products-list">
+                    <div class="product-in-order">
+                        <span class="product-name-order">Название товара</span>
+                        <span class="product-quantity-order">x2</span>
+                        <span class="product-price-order">1000 ₽</span>
+                    </div>
+                    <div class="product-in-order">
+                        <span class="product-name-order">Другой товар</span>
+                        <span class="product-quantity-order">x1</span>
+                        <span class="product-price-order">500 ₽</span>
+                    </div>
+                </div>
+                <div class="order-total">Итого: 1500 ₽</div>
+            </div>
+            <div class="order-detail-item">
+                <div class="detail-label">Данные доставки</div>
+                <div class="detail-value">г. Москва, ул. Примерная, д. 1</div>
+                <div class="detail-value">Телефон: +7 (999) 123-45-67</div>
+            </div>
+            <div class="order-detail-item">
+                <div class="detail-label">Комментарий</div>
+                <div class="detail-value">Позвонить перед доставкой</div>
+            </div>
+        `;
+
+        modal.classList.add('show');
+    }
+
+    // Закрыть модальное окно
+    function closeModal() {
+        const modal = document.getElementById('orderModal');
+        modal.classList.remove('show');
+    }
+
+    // Закрыть по клику вне окна
+    window.onclick = function(event) {
+        const modal = document.getElementById('orderModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+</script>
+{% endblock %}

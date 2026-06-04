@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="auth-form">
+            <h1 class="section-title">Вход в систему</h1>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="POST" class="form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">Имя пользователя</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">Войти</button>
+            </form>
+            
+            <p class="auth-link">
+                Нет аккаунта? <a href="/register/">Зарегистрироваться</a>
+            </p>
+        </div>
+    </div>
+</section>
+
+<style>
+    .auth-form {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 40px;
+        background: var(--card-bg);
+        border-radius: var(--radius);
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius);
+        background: var(--bg-page);
+        color: var(--text-dark);
+    }
+    
+    .alert {
+        padding: 12px;
+        margin-bottom: 20px;
+        border-radius: var(--radius);
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .auth-link {
+        margin-top: 20px;
+        text-align: center;
+    }
+    
+    .auth-link a {
+        color: var(--accent);
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
