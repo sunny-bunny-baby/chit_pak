@@ -245,3 +245,14 @@ def mark_all_notifications_read(request):
     request.session['read_notifications'] = read_notifications
 
     return JsonResponse({'success': True})
+
+
+def get_notifications_count(request):
+    if not request.user.is_admin_user():
+        return JsonResponse({'count': 0})
+
+    week_ago = timezone.now() - timedelta(days=7)
+    read_notifications = request.session.get('read_notifications', [])
+
+    count = Order.objects.filter(created_at__gte=week_ago).exclude(id__in=read_notifications).count()
+    return JsonResponse({'count': count})

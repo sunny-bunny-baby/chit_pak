@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Админ панель - Чит&Пак (Фудфлористика){% endblock %}
+{% block title %}Админ панель - Чит&Пак{% endblock %}
 
 {% block content %}
 <section class="admin-section">
@@ -131,15 +131,6 @@
                                 <td>{% if product.quantity %}{{ product.quantity.value }} ягод{% else %}—{% endif %}</td>
                                 <td class="product-price">{{ product.price }} ₽</td>
                                 <td>
-                                    <form method="POST" class="stock-form">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="product_id" value="{{ product.id }}">
-                                        <label class="switch">
-                                            <input type="checkbox" name="in_stock" {% if product.in_stock %}checked{% endif %} onchange="this.form.submit()">
-                                            <span class="slider"></span>
-                                        </label>
-                                        <button type="submit" name="update_stock" style="display: none;">Обновить</button>
-                                    </form>
                                     <span class="stock-status {% if product.in_stock %}in-stock{% else %}out-of-stock{% endif %}">
                                         {% if product.in_stock %}В наличии{% else %}Под заказ{% endif %}
                                     </span>
@@ -309,52 +300,6 @@
     font-size: 14px;
     color: var(--text-primary);
     opacity: 0.7;
-}
-
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 24px;
-    margin-right: 10px;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: 0.3s;
-    border-radius: 24px;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: 0.3s;
-    border-radius: 50%;
-}
-
-input:checked + .slider {
-    background-color: #2c4c61;
-}
-
-input:checked + .slider:before {
-    transform: translateX(26px);
 }
 
 .stock-status {
@@ -798,5 +743,140 @@ input:checked + .slider:before {
             closeEditModal();
         }
     }
+
+    let lastOrderCount = 0;
+
+    function checkNewOrders() {
+        fetch('/admin/notifications/count/')
+            .then(res => {
+                if (!res.ok) throw new Error('Ошибка запроса');
+                return res.json();
+            })
+            .then(data => {
+                const count = data.count || 0;
+                const counter = document.getElementById('notificationsCount');
+                const icon = document.querySelector('.notifications-btn');
+
+                if (counter) {
+                    if (count > 0) {
+                        counter.style.display = 'inline-block';
+                        counter.textContent = count;
+                    } else {
+                        counter.style.display = 'none';
+                    }
+                }
+
+                if (icon) {
+                    if (count > 0) {
+                        icon.style.animation = 'blink 1s infinite';
+                    } else {
+                        icon.style.animation = '';
+                    }
+                }
+
+                // Если появился новый заказ (счётчик увеличился)
+                if (count > lastOrderCount && count > 0) {
+                    lastOrderCount = count;
+                    playNotificationSound();
+                }
+            })
+            .catch(err => console.log('Ошибка проверки:', err));
+    }
+
+    function playNotificationSound() {
+        // Генерация звука через Web Audio API (без внешних файлов)
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.frequency.value = 880;
+            oscillator.type = 'sine';
+
+            gainNode.gain.value = 0.3;
+
+            oscillator.start();
+            setTimeout(() => {
+                oscillator.frequency.value = 1100;
+            }, 150);
+            setTimeout(() => {
+                oscillator.stop();
+            }, 400);
+
+            // Второй сигнал
+            setTimeout(() => {
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.frequency.value = 880;
+                osc2.type = 'sine';
+                gain2.gain.value = 0.3;
+                osc2.start();
+                setTimeout(() => {
+                    osc2.stop();
+                }, 200);
+            }, 500);
+
+        } catch (e) {
+            console.log('Звук не поддерживается');
+        }
+
+        // Мигание заголовка вкладки
+        let originalTitle = document.title;
+        let isBlinking = true;
+        let blinkCount = 0;
+
+        const interval = setInterval(() => {
+            if (blinkCount > 10) {
+                clearInterval(interval);
+                document.title = originalTitle;
+                return;
+            }
+            document.title = isBlinking ? '🔔 НОВЫЙ ЗАКАЗ!' : originalTitle;
+            isBlinking = !isBlinking;
+            blinkCount++;
+        }, 500);
+    }
+
+    // Первая проверка сразу
+    document.addEventListener('DOMContentLoaded', function() {
+        // Сначала получим текущее количество заказов
+        fetch('/admin/notifications/count/')
+            .then(res => res.json())
+            .then(data => {
+                lastOrderCount = data.count || 0;
+            })
+            .catch(() => {});
+
+        // Запускаем проверку
+        setTimeout(checkNewOrders, 1000);
+    });
+
+    // Проверка каждые 10 секунд
+    setInterval(checkNewOrders, 10000);
+
+    // Если админ кликнет на уведомление — сбрасываем счетчик визуально
+    document.addEventListener('click', function(e) {
+        const notifBtn = document.querySelector('.notifications-btn');
+        if (notifBtn && notifBtn.contains(e.target)) {
+            const counter = document.getElementById('notificationsCount');
+            if (counter) {
+                // Пользователь увидел уведомления
+                setTimeout(() => {
+                    // Помечаем как просмотренные через специальный эндпоинт
+                    fetch('/admin/notifications/mark-all-read/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                        }
+                    });
+                }, 1000);
+            }
+        }
+    });
 </script>
 {% endblock %}
