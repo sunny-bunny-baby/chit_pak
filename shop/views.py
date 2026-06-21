@@ -105,7 +105,6 @@ def add_to_cart(request, product_id):
     flower_type = request.POST.get('flower_type', '')
     flower_color = request.POST.get('flower_color', '')
 
-    # Рассчитываем доплату
     extra_price = 0
     if chocolate_type == 'colored':
         extra_price += 150

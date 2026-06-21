@@ -84,7 +84,6 @@ class CartItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
 
-    # Дополнительные опции
     chocolate_type = models.CharField(max_length=50, blank=True, null=True)
     chocolate_color = models.CharField(max_length=50, blank=True, null=True)
     packaging_type = models.CharField(max_length=50, blank=True, null=True)
@@ -129,7 +128,6 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
-    # Дополнительные опции
     chocolate_type = models.CharField(max_length=50, blank=True, null=True)
     chocolate_color = models.CharField(max_length=50, blank=True, null=True)
     packaging_type = models.CharField(max_length=50, blank=True, null=True)
